@@ -50,6 +50,7 @@ QVariant JsonItem::data(int column) const
     const int TYPE_COLUMN = 2;
 
     if (column == VALUE_COLUMN) {
+        // bug: these overwrite column header
         if (jsonValue.isString()) {
             return jsonValue.toString();
         }
@@ -59,26 +60,38 @@ QVariant JsonItem::data(int column) const
         else if (jsonValue.isBool()) {
             return jsonValue.toBool();
         }
+//        else if (jsonValue.isNull()) {
+//            return "(null)";
+//        }
+        else if (jsonValue.isArray()) {
+            return "(array)";
+        }
         else if (jsonValue.isObject()) {
             return "------";
         }
     }
     else if (column == TYPE_COLUMN) {
         switch (m_itemData.value(column).toInt()) {
-        case QJsonValue::Double:
-            return "Double";
-            break;
-        case QJsonValue::String:
-            return "String";
-            break;
-        case QJsonValue::Object:
-            return "Object";
-            break;
-        case QJsonValue::Bool:
-            return "Bool";
-            break;
-        default:
-            return "Other";
+            case QJsonValue::Double:
+                return "Double";
+                break;
+            case QJsonValue::String:
+                return "String";
+                break;
+            case QJsonValue::Object:
+                return "Object";
+                break;
+            case QJsonValue::Bool:
+                return "Bool";
+                break;
+            case QJsonValue::Array:
+                return "Array";
+                break;
+            case QJsonValue::Null:
+                return "Null";
+                break;
+            default:
+                return "Other";
         }
     }
 
@@ -103,4 +116,3 @@ JsonItem::~JsonItem()
 {
     qDeleteAll(m_childItems);
 }
-

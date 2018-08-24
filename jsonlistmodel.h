@@ -5,19 +5,17 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QFile>
 #include <QDebug>
-#include <QVector>
 #include <QFont>
 #include <QList>
 #include <QModelIndex>
-#include <jsonitem.h>
 #include <QStringList>
 #include <QMimeData>
 #include <QCoreApplication>
 #include <QMap>
-#include <QSharedPointer>
 #include <QBrush>
+#include <jsonitem.h>
+#include <QFile>
 
 
 class JsonListModel : public QAbstractItemModel

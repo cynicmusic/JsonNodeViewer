@@ -34,7 +34,7 @@ private:
     Ui::MainWindow *ui;
 
     void buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj, int level = 0);
-    void addChildItemsForJsonObject(JsonItem *jsonItem, QJsonObject *obj);
+    void addChildItemsForJsonObjectRecursively(JsonItem *jsonItem, QJsonObject *obj);
 
     QJsonObject rootJsonObject;
 

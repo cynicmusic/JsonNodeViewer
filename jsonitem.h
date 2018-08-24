@@ -18,18 +18,20 @@ public:
     void appendChild(JsonItem *child);
     void insertChildAt(int index, JsonItem *item);
     void removeChild(JsonItem *item);
-
-    JsonItem *child(int row);
-    int childCount() const;
-    int columnCount() const;
-    QVariant data(int column) const;
-    int row() const;
-    JsonItem *parentItem();
-
     void updateParentItem(JsonItem *newParent);
 
-    QJsonValue jsonValue; // should be private and passed through ctor
+    int childCount() const;
+    int columnCount() const;
+    int row() const;
+
+    JsonItem *child(int row);
+    JsonItem *parentItem();
+
     QString key();
+
+    QVariant data(int column) const;
+    QJsonValue jsonValue; // TODO: this should be private and passed through ctor
+
 private:
     QList<JsonItem*> m_childItems;
     QList<QVariant> m_itemData;

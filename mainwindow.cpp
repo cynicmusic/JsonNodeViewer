@@ -112,7 +112,7 @@ bool MainWindow::load_json_file_from_disk(QString filename)
 
 void MainWindow::buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj, int level)
 {
-    if (level > 0) {
+    if (level > 0) { // TODO: improve this
         obj->insert(jsonItem->key(), jsonItem->jsonValue);
     }
 
@@ -122,7 +122,7 @@ void MainWindow::buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj, int lev
             JsonItem *child = jsonItem->child(i);
 
             if (child->jsonValue.isObject()) {
-                addChildItemsForJsonObject(child, obj);
+                addChildItemsForJsonObjectRecursively(child, obj);
             }
 
             else {
@@ -132,7 +132,7 @@ void MainWindow::buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj, int lev
     }
 }
 
-void MainWindow::addChildItemsForJsonObject(JsonItem *jsonItem, QJsonObject *obj)
+void MainWindow::addChildItemsForJsonObjectRecursively(JsonItem *jsonItem, QJsonObject *obj)
 {
     QJsonObject *newObject = new QJsonObject();
     for (int j = 0; j < jsonItem->childCount(); ++j) {
@@ -140,7 +140,7 @@ void MainWindow::addChildItemsForJsonObject(JsonItem *jsonItem, QJsonObject *obj
         JsonItem *child = jsonItem->child(j);
 
             if (child->jsonValue.isObject()) {
-                addChildItemsForJsonObject(child, newObject);
+                addChildItemsForJsonObjectRecursively(child, newObject);
             }
 
             else {
@@ -163,5 +163,3 @@ void MainWindow::on_model_dataChanged(QModelIndex m, QModelIndex mi)
     update_json_document();
     treeView->expandAll();
 }
-
-
