@@ -13,7 +13,6 @@ JsonListModel::JsonListModel(const QJsonObject &data, QObject *parent)
     QList<QVariant> rootData;
     rootData << "Key" << "Value" << "Type";
     rootItem = new JsonItem(rootData);
-    //jsonObject = data;
 
     // iterate over QJsonObject and add objects
     for (auto it = data.constBegin(); it != data.constEnd(); ++it) {
@@ -26,43 +25,37 @@ JsonListModel::JsonListModel(const QJsonObject &data, QObject *parent)
         rootItem->appendChild(child);
 
         if (jsonValue.isObject()) {
-            addNewObject(jsonValue, child);
+            addJsonToModelRecursively(jsonValue, child);
         }
     }
 }
 
-void JsonListModel::addNewObject(QJsonValue &thisItem, JsonItem *child) {
-    QJsonObject newObject = thisItem.toObject();
+void JsonListModel::addJsonToModelRecursively(QJsonValue &thisItem, JsonItem *parent) {
+    QJsonObject data = thisItem.toObject();
 
-     for (auto it1 = newObject.constBegin(); it1 != newObject.constEnd(); ++it1) {
-         QJsonValue newItem = newObject[it1.key()];
-         QList<QVariant> columnData1;
-         columnData1 << QString(it1.key()) << newItem << newItem.type();
+     for (auto it = data.constBegin(); it != data.constEnd(); ++it) {
+         QJsonValue jsonValue = data[it.key()];
+         QList<QVariant> columnData;
+         columnData << QString(it.key()) << jsonValue << jsonValue.type();
 
-         JsonItem *child1 = new JsonItem(columnData1,child);
-         child1->jsonValue = newItem;
-         child->appendChild(child1);
+         JsonItem *child = new JsonItem(columnData,parent);
+         child->jsonValue = jsonValue;
+         parent->appendChild(child);
 
-         if (newItem.isObject()) {
-             addNewObject(newItem, child1);
+         if (jsonValue.isObject()) {
+             addJsonToModelRecursively(jsonValue, child);
          }
      }
 }
 
-
-
-
 JsonListModel::~JsonListModel()
 {
-    qDebug() << "call destructor!!!!! =====================";
     delete rootItem;
 }
 
-//Since we cannot add data to the model after it is constructed and set up,
-//this simplifies the way that the internal tree of items is managed.
-
-QModelIndex JsonListModel::index(int row, int column, const QModelIndex &parent)
-            const
+// Since we cannot add data to the model after it is constructed and set up,
+// this simplifies the way that the internal tree of items is managed.
+QModelIndex JsonListModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
@@ -80,8 +73,6 @@ QModelIndex JsonListModel::index(int row, int column, const QModelIndex &parent)
     else
         return QModelIndex();
 }
-
-
 
 QModelIndex JsonListModel::parent(const QModelIndex &index) const
 {
@@ -159,6 +150,7 @@ Qt::ItemFlags JsonListModel::flags(const QModelIndex &index) const
 
     if (index.isValid())
         return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+    return 0;
 }
 
 static const char s_treeNodeMimeType[] = "application/x-treenode";
@@ -191,8 +183,6 @@ QMimeData *JsonListModel::mimeData(const QModelIndexList &indexes) const
 
     return mimeData;
 }
-
-
 
 bool JsonListModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
@@ -265,207 +255,7 @@ QVariant JsonListModel::headerData(int section, Qt::Orientation orientation, int
     return QVariant();
 }
 
-
 Qt::DropActions JsonListModel::supportedDropActions() const
 {
     return /*Qt::CopyAction |*/  Qt::MoveAction;
 }
-
-
-
-//bool JsonListModel::setData(const QModelIndex &index, const QVariant &value, int role)
-//{
-//    if (index.row() >= 0 && index.row() < rootJsonValues.size()
-//        && (role == Qt::EditRole || role == Qt::DisplayRole)) {
-//        qDebug() << "what is type " << typeid(value).name();
-//        qDebug() << "what is variant type " << value.typeName();
-
-
-//        // TODO major problem here! --- all this matching we're doing is based on QString...more complex objects will NOT match!
-
-//        QJsonValue thisItem = QJsonValue::fromVariant(value);
-//        int indexOfThisItem = rootJsonValues.indexOf(thisItem);
-//        qDebug() << "index of this item " << indexOfThisItem;
-
-//        int indexToInsert = index.row();
-//        int indexToRemove = indexOfThisItem;
-
-//        qDebug() << "insert at " << indexToInsert << " -- remove at " << indexToRemove;
-
-//        if (indexToRemove >= 0) {
-//            rootJsonValues.removeAt(indexToRemove); // remove needs to come first? but does that mess things up if you move down?
-//        }
-//        rootJsonValues.insert(indexToInsert, thisItem);
-
-//        beginResetModel();
-
-//        QVector<int> roles;
-//        roles.reserve(2);
-//        roles.append(Qt::DisplayRole);
-//        roles.append(Qt::EditRole);
-//        emit dataChanged(index, index, roles);
-//        return true;
-//    }
-//    return false;
-//}
-
-
-//QModelIndex JsonListModel::index(int row, int col, const QModelIndex &parent) const
-//{
-//    if (!hasIndex(row, col, parent))
-//        return QModelIndex();
-
-//    // check if thing is valid like parent index etc
-
-//    qDebug() << "creating index for " << row;
-
-//    QJsonValue * alex = rootJsonValues.at(row);
-//    return createIndex(row, 0, alex);
-
-
-//    //return QAbstractItemModel::createIndex(row, 0, alex);
-//    return QModelIndex();
-//}
-
-//QModelIndex JsonListModel::parent(const QModelIndex &child) const
-//{
-//    return QModelIndex();
-//}
-
-
-
-
-
-
-//QVariant JsonListModel::data(const QModelIndex &index, int role) const
-//{
-//    if (!index.isValid())
-//            return QVariant();
-//    if (index.row() >= rootJsonValues.size() || index.row() < 0)
-//            return QVariant();
-
-//    int row = index.row();
-
-//    int *i = static_cast<int*>(index.internalPointer());
-//    qDebug() << "is this data " << i;
-
-//    QJsonValue jsonValue = rootJsonValues.at(row);
-
-
-//    // THURSDAY FINAL DAY!!!
-//    // THURSDAY FINAL DAY!!!
-//    QJsonValue *thing = static_cast<QJsonValue *>(index.internalPointer());
-//    //qDebug() << "what is type in data " << typeid(*thing).name() << "its a " << thing->toString();
-
-
-
-//    // THURSDAY FINAL DAY!!!
-//    // THURSDAY FINAL DAY!!!
-//    // THURSDAY FINAL DAY!!!
-
-//    if (role == Qt::DisplayRole)
-//    {
-
-
-//        if (jsonValue.isString()) {
-//            return QString(jsonValue.toString());
-//        }
-//        else if (jsonValue.isDouble()) {
-//            return QString::number(jsonValue.toDouble());
-//        }else if (jsonValue.isBool()) {
-//            return jsonValue.toBool() == 1 ? QString("true") : QString("false");
-//        } else if (jsonValue.isArray()) {
-//            return QString(jsonValue.toArray()[0].toString());
-//        } else if (jsonValue.isObject()) {
-//            return QString("{" + jsonValue.toObject().begin().value().toString() + "}");
-//        }
-
-//        return QString(rootJsonValues.at(row).toString());
-//    }
-//    if (role == Qt::FontRole)
-//    {
-//        {
-//            QFont font;
-//            font.setBold(true);
-//            font.setPointSize(18);
-
-//            if (jsonValue.isDouble()) {
-//                qDebug() << "omg!!";
-//                font.setItalic(true);
-//            }
-
-//            return font;
-//        }
-//    }
-//    return QVariant();
-//}
-
-//bool JsonListModel::loadJsonFromDocument(const QJsonDocument &jsonDoc) { // should be loadJsonIntoModel
-
-//    if (!jsonDoc.isNull()) {
-//        beginResetModel();
-//        //todo
-
-//        this->jsonDocument = jsonDoc; // i think we need to dynamically allocate this
-
-//        jsonObject = jsonDocument.object();
-
-//    }
-//    return true;
-//}
-
-
-
-
-//bool JsonListModel::loadFile(const QString &fileName)
-//{
-//    QFile file(fileName);
-//    bool success = false;
-//    if (file.open(QIODevice::ReadOnly)) {
-//        //success = load(&file);
-
-//        QByteArray ba = file.readAll();
-//        QJsonParseError jsonParseError;
-//        QJsonDocument jsonDoc = QJsonDocument::fromJson(ba, &jsonParseError);
-//        if(jsonParseError.error != QJsonParseError::NoError) {
-//            return false;
-//        }
-
-
-//        /////////////////// move this
-//        QJsonObject rootJsonObject = jsonDoc.object();
-
-//        qDebug() << "i love horses! " << rootJsonObject.length();
-
-
-//        int i = 0;
-//        for (auto it = rootJsonObject.constBegin(); it != rootJsonObject.constEnd(); ++it) {
-
-//        QJsonValue thisItem = QJsonValue::fromVariant(*it);
-
-//        qDebug() << "Creating data " << thisItem.toString();
-//            rootJsonValues.append(*it);
-//            qDebug() << "*it horse!! " << typeid(*it).name();
-
-////            int * alex = new int(88);
-////            createIndex(i, 0, alex);
-//        }
-//        //beginResetModel();
-
-
-
-
-//        /////////////////
-
-//        //loadJsonFromDocument(jsonDoc);
-//        file.close();
-//        qDebug() << "yep";
-//        return true;
-//    }
-//    else success = false;
-//    qDebug() << "nope";
-//    return success;
-//}
-
-
-

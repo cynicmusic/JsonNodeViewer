@@ -9,9 +9,7 @@
 #include <QDebug>
 #include <QVector>
 #include <QFont>
-#include <QLinkedList>
 #include <QList>
-#include <QJsonParseError>
 #include <QModelIndex>
 #include <jsonitem.h>
 #include <QStringList>
@@ -31,21 +29,27 @@ public:
     ~JsonListModel();
 
     QVariant data(const QModelIndex &index, int role) const override;
-    //QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-
     QVariant headerData(int section, Qt::Orientation orientation,
                             int role = Qt::DisplayRole) const override;
 
-    QModelIndex index(int row, int col, const QModelIndex &parent) const override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    Qt::DropActions supportedDropActions() const;
 
+    QModelIndex index(int row, int col, const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &child) const override;
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-    Qt::DropActions supportedDropActions() const;
+    JsonItem * getRootItem() const;
+
+    void addJsonToModelRecursively(QJsonValue &thisItem, JsonItem *parent);
+
+private:
+    QJsonDocument jsonDocument;
+    QJsonObject jsonObject;
+
+    JsonItem *rootItem;
 
     QStringList mimeTypes() const;
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
@@ -53,16 +57,6 @@ public:
     JsonItem * nodeForIndex(const QModelIndex &index) const;
 
     QList<QJsonValue> rootJsonValues;
-
-    JsonItem * getRootItem() const;
-
-    void addNewObject(QJsonValue &thisItem, JsonItem *child);
-
-private:
-    QJsonDocument jsonDocument;
-    QJsonObject jsonObject;
-
-    JsonItem *rootItem;
 
 
 
