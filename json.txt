@@ -1,0 +1,34 @@
+{
+    "EmptyFruitBasket": {
+    },
+    "FruitA":"Apple",
+    "FruitB":"Banana",
+    "FruitC":"Cantaloupe",
+    "FruitD":"Date",
+    "FruitE":"Elderberry",
+    "FruitF": "Fig",
+    "FruitG": "Grape",
+    "Numbers": {
+        "one" : 1,
+        "two" : 2,
+        "three" : 3,
+        "floats" : {
+            "onepointone": 1.1,
+            "threepointonefour" : 3.14
+        }
+    },
+    "Vegetables" : {
+        "VegetableA":"Artichoke",
+        "VegetableB":"Broccoli",
+        "VegetableC":"Cabbage"
+    },
+    "zBooleans" : {
+        "zBoolTrue" : false,
+        "zBoolFalse" : true
+    },
+    "OtherTypes" : {
+        "Array" : [1,2,3,4],
+        "Null" : null
+    }
+
+}
