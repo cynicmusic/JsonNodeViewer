@@ -16,11 +16,15 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     jsonlistmodel.cpp \
-    jsonitem.cpp
+    jsonitem.cpp \
+    jsonfileio.cpp \
+    jsonrepresentationbuilder.cpp
 
 HEADERS  += mainwindow.h \
     jsonlistmodel.h \
-    jsonitem.h
+    jsonitem.h \
+    jsonfileio.h \
+    jsonrepresentationbuilder.h
 
 FORMS    += mainwindow.ui
 

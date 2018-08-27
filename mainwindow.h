@@ -8,9 +8,11 @@
 #include <QMessageBox>
 #include <QListView>
 #include <QTreeView>
+#include <QDebug>
 #include "jsonlistmodel.h"
 #include "jsonitem.h"
-#include <QDebug>
+#include "jsonfileio.h"
+#include "jsonrepresentationbuilder.h"
 
 namespace Ui {
 class MainWindow;
@@ -23,24 +25,16 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    JsonListModel * model;
-    QTreeView * treeView; // make this private?
 
 private slots:
-    void save_document( void );
-    void on_model_dataChanged(QModelIndex, QModelIndex);
+    void SaveJsonDocumentToDisk( void );
+    void OnModelDataChanged(QModelIndex, QModelIndex);
 
 private:
     Ui::MainWindow *ui;
-
+    JsonListModel * model;
     void buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj, int level = 0);
-    void addChildItemsForJsonObjectRecursively(JsonItem *jsonItem, QJsonObject *obj);
-
-    QJsonObject rootJsonObject;
-
-    bool load_json_file_from_disk(QString filename);
-    bool write_json_to_disk(QJsonDocument &doc, const QString filename);
-    bool update_json_document(bool alsoSaveToFile = false);
+    void UpdateJsonInTextWidget();
 };
 
 #endif // MAINWINDOW_H
