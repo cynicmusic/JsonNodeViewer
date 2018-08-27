@@ -19,10 +19,10 @@ MainWindow::MainWindow(QWidget *parent) :
     bool success = JsonFileIO::LoadJsonDocumentFromDisk(doc, filename, errorCode);
     if (!success) {
         if (errorCode == JsonFileIOError::CouldNotOpenFile) {
-            alert("Error reading from file json.txt");
+            alert("Error reading from file " + filename);
             return;
         } else if (errorCode == JsonFileIOError::CouldNotParseFile) {
-            alert("Error parsing JSON in json.txt");
+            alert("Error parsing JSON in " + filename);
             return;
         }
         else {
@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::UpdateJsonInTextWidget()
 {
-    JsonItem * rootJsonItem = model->getRootItem();
+    JsonItem *rootJsonItem = model->getRootItem();
     QJsonObject *obj = new QJsonObject();
     QJsonDocument doc;
 
@@ -60,7 +60,7 @@ void MainWindow::UpdateJsonInTextWidget()
 
 void MainWindow::SaveJsonDocumentToDisk( void )
 {
-    JsonItem * rootJsonItem = model->getRootItem();
+    JsonItem *rootJsonItem = model->getRootItem();
     QJsonObject *obj = new QJsonObject();
     QJsonDocument doc;
 

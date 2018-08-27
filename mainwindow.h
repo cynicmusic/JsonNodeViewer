@@ -6,7 +6,6 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QMessageBox>
-#include <QListView>
 #include <QTreeView>
 #include <QDebug>
 #include "jsonlistmodel.h"
@@ -32,7 +31,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    JsonListModel * model;
+    JsonListModel *model;
     void buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj, int level = 0);
     void UpdateJsonInTextWidget();
 };

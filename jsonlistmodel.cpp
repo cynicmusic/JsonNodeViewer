@@ -257,5 +257,5 @@ QVariant JsonListModel::headerData(int section, Qt::Orientation orientation, int
 
 Qt::DropActions JsonListModel::supportedDropActions() const
 {
-    return /*Qt::CopyAction |*/  Qt::MoveAction;
+    return Qt::MoveAction;
 }

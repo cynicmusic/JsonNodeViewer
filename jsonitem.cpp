@@ -6,6 +6,11 @@ JsonItem::JsonItem(const QList<QVariant> &data, JsonItem *parent)
     m_itemData = data;
 }
 
+JsonItem::~JsonItem()
+{
+    qDeleteAll(m_childItems);
+}
+
 void JsonItem::appendChild(JsonItem *item)
 {
     m_childItems.append(item);
@@ -108,11 +113,6 @@ void JsonItem::updateParentItem(JsonItem *newParent) {
     m_parentItem = newParent;
 }
 
-QString JsonItem::key() {
+QString JsonItem::key() const {
     return QString(m_itemData.value(0).toString());
-}
-
-JsonItem::~JsonItem()
-{
-    qDeleteAll(m_childItems);
 }

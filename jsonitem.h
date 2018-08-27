@@ -2,10 +2,7 @@
 #define JSONITEM_H
 #include <QList>
 #include <QVariant>
-#include <QDebug>
 #include <QJsonValue>
-#include <QMimeData>
-
 
 class JsonItem
 {
@@ -27,7 +24,7 @@ public:
     JsonItem *child(int row);
     JsonItem *parentItem();
 
-    QString key();
+    QString key() const;
 
     QVariant data(int column) const;
     QJsonValue jsonValue; // TODO: this should be private and passed through ctor
