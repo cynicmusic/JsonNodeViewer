@@ -7,7 +7,8 @@ JsonItem * JsonListModel::getRootItem() const
 }
 
 JsonListModel::JsonListModel(const QJsonObject &data, QObject *parent)
-    : QAbstractItemModel(parent),jsonObject(data)
+    : QAbstractItemModel(parent),
+      jsonObject(data)
 {
     // Set column header and root data object
     QList<QVariant> rootData;

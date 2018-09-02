@@ -2,10 +2,13 @@
 
 JsonRepresentationBuilder::JsonRepresentationBuilder(){}
 
-void JsonRepresentationBuilder::BuildJsonDocumentFromRootItem(JsonItem *rootJsonItem, QJsonObject *obj, QJsonDocument &doc)
+void JsonRepresentationBuilder::BuildJsonDocumentFromRootItem
+       (JsonItem *rootJsonItem, QJsonDocument &doc)
 {
+    QJsonObject *obj = new QJsonObject();
     JsonRepresentationBuilder::buildJsonDocument(rootJsonItem, obj);
     doc.setObject(*obj);
+    delete obj;
 }
 
 void JsonRepresentationBuilder::buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj)

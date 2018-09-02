@@ -10,7 +10,7 @@ public:
     JsonRepresentationBuilder();
     ~JsonRepresentationBuilder();
 
-    static void BuildJsonDocumentFromRootItem(JsonItem *rootJsonItem, QJsonObject *obj, QJsonDocument &doc);
+    static void BuildJsonDocumentFromRootItem(JsonItem *rootJsonItem, QJsonDocument &doc);
 
 private:
     static void buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj);

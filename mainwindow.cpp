@@ -1,7 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-void alert(QString message) {
+void MainWindow::alert(QString message)
+{
     QMessageBox msgBox;
     msgBox.setText(message);
     msgBox.exec();
@@ -11,24 +12,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
     ui->setupUi(this);
 
     QJsonDocument doc;
-    int errorCode;
     QString filename("json.txt");
-    bool success = JsonFileIO::LoadJsonDocumentFromDisk(doc, filename, errorCode);
-    if (!success) {
-        if (errorCode == JsonFileIOError::CouldNotOpenFile) {
-            alert("Error reading from file " + filename);
-            return;
-        } else if (errorCode == JsonFileIOError::CouldNotParseFile) {
-            alert("Error parsing JSON in " + filename);
-            return;
-        }
-        else {
-            alert("Unknown error loading file");
-            return;
-        }
+    if (!LoadJsonDocumentFromDisk(doc, filename)) {
+        return;
     }
 
     model = new JsonListModel(doc.object());
@@ -45,26 +35,43 @@ MainWindow::MainWindow(QWidget *parent) :
     UpdateJsonInTextWidget();
 }
 
+bool MainWindow::LoadJsonDocumentFromDisk(QJsonDocument &doc, QString &filename)
+{
+    int errorCode;
+
+    bool success = JsonFileIO::LoadJsonDocumentFromDisk(doc, filename, errorCode);
+    if (!success) {
+        if (errorCode == JsonFileIOError::CouldNotOpenFile) {
+            alert("Error reading from file " + filename);
+            return false;
+        } else if (errorCode == JsonFileIOError::CouldNotParseFile) {
+            alert("Error parsing JSON in " + filename);
+            return false;
+        }
+        else {
+            alert("Unknown error loading file");
+            return false;
+        }
+    }
+    return true;
+}
+
 void MainWindow::UpdateJsonInTextWidget()
 {
     JsonItem *rootJsonItem = model->getRootItem();
-    QJsonObject *obj = new QJsonObject();
     QJsonDocument doc;
 
-    JsonRepresentationBuilder::BuildJsonDocumentFromRootItem(rootJsonItem, obj, doc);
+    JsonRepresentationBuilder::BuildJsonDocumentFromRootItem(rootJsonItem, doc);
 
     ui->textEdit->setText(doc.toJson());
-
-    delete obj; // TODO: use smart pointer
 }
 
 void MainWindow::SaveJsonDocumentToDisk( void )
 {
     JsonItem *rootJsonItem = model->getRootItem();
-    QJsonObject *obj = new QJsonObject();
     QJsonDocument doc;
 
-    JsonRepresentationBuilder::BuildJsonDocumentFromRootItem(rootJsonItem, obj, doc);
+    JsonRepresentationBuilder::BuildJsonDocumentFromRootItem(rootJsonItem, doc);
 
     ui->save_document_button->setEnabled(false);
 
@@ -80,8 +87,6 @@ void MainWindow::SaveJsonDocumentToDisk( void )
     }
 
     ui->save_document_button->setEnabled(true);
-
-    delete obj;
 }
 
 void MainWindow::OnModelDataChanged(QModelIndex m, QModelIndex mi)

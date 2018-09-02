@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QJsonObject>
 #include <QJsonDocument>
-#include <QJsonArray>
 #include <QMessageBox>
 #include <QTreeView>
 #include <QDebug>
@@ -25,15 +24,20 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-private slots:
+public slots:
+     // Public for unit tests. TODO: make protected and subclass MainWindow instead
     void SaveJsonDocumentToDisk( void );
+
+private slots:
     void OnModelDataChanged(QModelIndex, QModelIndex);
 
 private:
-    Ui::MainWindow *ui;
-    JsonListModel *model;
-    void buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj, int level = 0);
+    void alert(QString message);
     void UpdateJsonInTextWidget();
+    bool LoadJsonDocumentFromDisk(QJsonDocument &doc, QString &filename);
+
+    JsonListModel *model;
+    Ui::MainWindow *ui;
 };
 
 #endif // MAINWINDOW_H
