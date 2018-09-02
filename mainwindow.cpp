@@ -1,165 +1,103 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+void MainWindow::alert(QString message)
 {
-    ui->setupUi(this);
-
-    bool success = load_json_file_from_disk("json.txt");
-    if (!success) return;
-
-    model = new JsonListModel(rootJsonObject);
-
-    treeView = new QTreeView(this); // TODO: add treeView to .ui file
-    treeView->resize(this->width()/2 + 100,450);
-    treeView->setModel(model);
-    treeView->setDragEnabled(true);
-    treeView->setDragDropMode(QAbstractItemView::InternalMove);
-    treeView->setSelectionMode(QAbstractItemView::SingleSelection);
-    treeView->setAcceptDrops(true);
-    treeView->setDropIndicatorShown(true);
-    treeView->setAlternatingRowColors(true);
-    treeView->viewport()->setAcceptDrops(true);
-
-    treeView->setColumnWidth(0, 225);
-    treeView->setColumnWidth(1, 125);
-    treeView->setColumnWidth(2, 85);
-    treeView->expandAll();
-
-    connect ( model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(on_model_dataChanged(QModelIndex, QModelIndex)));
-    connect( ui->save_document, SIGNAL(clicked()), this, SLOT(save_document()));
-
-    update_json_document();
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
-
-void alert(QString message) {
     QMessageBox msgBox;
     msgBox.setText(message);
     msgBox.exec();
 }
 
-bool MainWindow::update_json_document(bool alsoSaveToFile)
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
 {
-    if (model) {
-        JsonItem * rootJsonItem = model->getRootItem();
-        QJsonObject *obj = new QJsonObject();
-        buildJsonDocument(rootJsonItem, obj);
 
-        QJsonDocument doc(*obj);
-        ui->textEdit->setText(doc.toJson());
-        if (alsoSaveToFile) {
-            write_json_to_disk(doc, "output.txt");
-        }
-        delete obj;
+    ui->setupUi(this);
+
+    QJsonDocument doc;
+    QString filename("json.txt");
+    if (!LoadJsonDocumentFromDisk(doc, filename)) {
+        return;
     }
-    return true;
+
+    model = new JsonListModel(doc.object());
+
+    ui->treeView->setModel(model);
+    ui->treeView->setColumnWidth(0, 225);
+    ui->treeView->setColumnWidth(1, 125);
+    ui->treeView->setColumnWidth(2, 85);
+    ui->treeView->expandAll();
+
+    connect ( model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(OnModelDataChanged(QModelIndex, QModelIndex)));
+    connect ( ui->save_document_button, SIGNAL(clicked()), this, SLOT(SaveJsonDocumentToDisk()));
+
+    UpdateJsonInTextWidget();
 }
 
-bool MainWindow::write_json_to_disk(QJsonDocument &doc, const QString filename)
+bool MainWindow::LoadJsonDocumentFromDisk(QJsonDocument &doc, QString &filename)
 {
-    QFile saveFile(filename);
+    int errorCode;
 
-    if (!saveFile.open(QIODevice::WriteOnly)) {
-        alert("Couldn't open save file " + filename);
-        return false;
-    }
-
-    if (saveFile.write(doc.toJson()) != -1) {
-        return true;
-    } else {
-        alert("Error saving file");
-        return false;
-    }
-    return true;
-}
-
-void MainWindow::save_document( void )
-{
-    ui->save_document->setEnabled(false);
-    bool success = update_json_document(true);
-    if (success) {
-        alert("Saved file to output.txt");
-    }
-    ui->save_document->setEnabled(true);
-}
-
-bool MainWindow::load_json_file_from_disk(QString filename)
-{
-    QFile file(filename);
-    if (file.open(QIODevice::ReadOnly)) {
-        QByteArray ba = file.readAll();
-        QJsonParseError jsonParseError;
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(ba, &jsonParseError);
-        if(jsonParseError.error != QJsonParseError::NoError) {
-            alert("Parse Error loading JSON file!");
+    bool success = JsonFileIO::LoadJsonDocumentFromDisk(doc, filename, errorCode);
+    if (!success) {
+        if (errorCode == JsonFileIOError::CouldNotOpenFile) {
+            alert("Error reading from file " + filename);
             return false;
-        } else {
-            rootJsonObject = jsonDoc.object();
+        } else if (errorCode == JsonFileIOError::CouldNotParseFile) {
+            alert("Error parsing JSON in " + filename);
+            return false;
         }
-    } else {
-        alert("File " + filename + "not found!");
-        return false;
+        else {
+            alert("Unknown error loading file");
+            return false;
+        }
     }
     return true;
 }
 
-void MainWindow::buildJsonDocument(JsonItem *jsonItem, QJsonObject *obj, int level)
+void MainWindow::UpdateJsonInTextWidget()
 {
-    if (level > 0) { // TODO: improve this
-        obj->insert(jsonItem->key(), jsonItem->jsonValue);
-    }
+    JsonItem *rootJsonItem = model->getRootItem();
+    QJsonDocument doc;
 
-    if (jsonItem->childCount() > 0 && level == 0) {
-        for (int i = 0; i < jsonItem->childCount(); ++i) {
+    JsonRepresentationBuilder::BuildJsonDocumentFromRootItem(rootJsonItem, doc);
 
-            JsonItem *child = jsonItem->child(i);
+    ui->textEdit->setText(doc.toJson());
+}
 
-            if (child->jsonValue.isObject()) {
-                addChildItemsForJsonObjectRecursively(child, obj);
-            }
+void MainWindow::SaveJsonDocumentToDisk( void )
+{
+    JsonItem *rootJsonItem = model->getRootItem();
+    QJsonDocument doc;
 
-            else {
-                buildJsonDocument(jsonItem->child(i), obj, ++level);
-            }
+    JsonRepresentationBuilder::BuildJsonDocumentFromRootItem(rootJsonItem, doc);
+
+    ui->save_document_button->setEnabled(false);
+
+    int errorCode;
+    QString filename("output.txt");
+    bool success = JsonFileIO::SaveJsonDocumentToDisk(doc, filename, errorCode);
+    if (!success) {
+        if (errorCode == JsonFileIOError::CouldNotSaveFile) {
+            alert("Error saving file " + filename);
+        } else {
+            alert("Unknown error saving file");
         }
     }
+
+    ui->save_document_button->setEnabled(true);
 }
 
-void MainWindow::addChildItemsForJsonObjectRecursively(JsonItem *jsonItem, QJsonObject *obj)
-{
-    QJsonObject *newObject = new QJsonObject();
-    for (int j = 0; j < jsonItem->childCount(); ++j) {
-
-        JsonItem *child = jsonItem->child(j);
-
-            if (child->jsonValue.isObject()) {
-                addChildItemsForJsonObjectRecursively(child, newObject);
-            }
-
-            else {
-                newObject->insert(jsonItem->child(j)->key(), jsonItem->child(j)->jsonValue);
-            }
-    }
-
-    QJsonValue newValue(QJsonValue::Object);
-    newValue = QJsonValue::fromVariant(newObject->toVariantMap());
-
-    obj->insert(jsonItem->key(), newValue);
-    delete newObject;
-}
-
-void MainWindow::on_model_dataChanged(QModelIndex m, QModelIndex mi)
+void MainWindow::OnModelDataChanged(QModelIndex m, QModelIndex mi)
 {
     Q_UNUSED(m);
     Q_UNUSED(mi);
-    //qDebug() << "model data changed!";
-    update_json_document();
-    treeView->expandAll();
+    UpdateJsonInTextWidget();
+    ui->treeView->expandAll();
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
 }

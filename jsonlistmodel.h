@@ -4,19 +4,13 @@
 #include <QAbstractListModel>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
-#include <QDebug>
 #include <QFont>
 #include <QList>
 #include <QModelIndex>
 #include <QStringList>
 #include <QMimeData>
 #include <QCoreApplication>
-#include <QMap>
-#include <QBrush>
 #include <jsonitem.h>
-#include <QFile>
-
 
 class JsonListModel : public QAbstractItemModel
 {
@@ -55,9 +49,6 @@ private:
     JsonItem * nodeForIndex(const QModelIndex &index) const;
 
     QList<QJsonValue> rootJsonValues;
-
-
-
 };
 
 #endif // JSONLISTMODEL_H
